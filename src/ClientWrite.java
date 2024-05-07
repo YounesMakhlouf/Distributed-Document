@@ -8,29 +8,26 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeoutException;
 
 public class ClientWrite {
-    private static final String EXCHANGE_NAME = "writer";
+    private static final String EXCHANGE_NAME = Config.WRITER_EXCHANGE_NAME;
 
-    public static void sendMessage(String message) throws IOException, TimeoutException {
+    public static void sendMessage(String message) {
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost("localhost");
+        factory.setHost(Config.RABBITMQ_HOST);
         try (Connection connection = factory.newConnection(); Channel channel = connection.createChannel()) {
             channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
-            channel.basicPublish(EXCHANGE_NAME, "", null, message.getBytes((StandardCharsets.UTF_8)));
+            channel.basicPublish(EXCHANGE_NAME, "", null, message.getBytes(StandardCharsets.UTF_8));
             System.out.println(" [x] Sent '" + message + "'");
+        } catch (IOException | TimeoutException e) {
+            System.err.println("Failed to send message: " + e.getMessage());
         }
     }
 
-    public static void main(String[] argv) throws Exception {
-        String message = getMessage(argv);
+    public static void main(String[] argv) {
+        if (argv.length < 1) {
+            System.err.println("Usage: ClientWrite <message>");
+            System.exit(1);
+        }
+        String message = String.join(" ", argv);
         sendMessage(message);
-    }
-
-
-    private static String getMessage(String[] args) throws Exception {
-        if (args.length < 1) {
-            throw new Exception("No message provided.");
-        }
-
-        return String.join(" ", args);
     }
 }
