@@ -1,0 +1,5 @@
+1   ligne 1
+2   ligne 2
+4   ligne 4
+5   ligne 5
+10 ligne 10
